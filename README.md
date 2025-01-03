@@ -1,2 +1,42 @@
 # linux-server-management
 Enterprise-level Linux server management documentation and best practices for CentOS 7.9 with cPanel/WHM implementation
+
+## Overview
+Documentation of server management practices and procedures for Linux-based infrastructure, focusing on CentOS 7.9 environment running cPanel/WHM.
+Environment
+
+## Server Specifications
+- OS: CentOS v7.9.2009 STANDARD
+- Control Panel: cPanel Version 110.0.48
+- Hosting: Afrihost Dedicated Hosting (Self-managed)
+- Hardware: 8GB RAM, 2x 1TB Enterprise (RAID 1)
+
+## Features
+
+* Daily server management procedures
+* Security implementation guides
+* Backup management strategies
+* Monitoring and alert systems
+* Performance optimization techniques
+* Disaster recovery procedures
+
+Documentation Structure
+
+docs/: Detailed documentation for each component
+scripts/: Automation scripts for routine tasks
+configs/: Example configuration files
+templates/: Templates for common procedures
+
+Getting Started
+
+Clone this repository
+Review the documentation in docs/
+Check configuration examples in configs/
+Explore automation scripts in scripts/
+
+Contributing
+Contributions welcome! Please read CONTRIBUTING.md for guidelines.
+License
+MIT License
+Author
+Clarence Msindo - ICT Shared Services Lead at HA Group
