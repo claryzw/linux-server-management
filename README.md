@@ -21,14 +21,11 @@ Documentation of server management practices and procedures for Linux-based infr
 ## Documentation Structure
 - `docs/`: Detailed documentation for each component
 - `scripts/`: Automation scripts for routine tasks
-- `configs/`: Example configuration files
-- `templates/`: Templates for common procedures
 
 ## Getting Started
 1. Clone this repository
 2. Review the documentation in `docs/`
-3. Check configuration examples in `configs/`
-4. Explore automation scripts in `scripts/`
+3. Explore automation scripts in `scripts/`
 
 ## Author
 Clarence Msindo - ICT Shared Services Lead at HA Group
