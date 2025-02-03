@@ -6,9 +6,9 @@
 # Date: January 2025
 
 # Set script variables
-SCRIPT_DIR="/home/hpcagroup/scripts"
-OUTPUT_DIR="/home/hpcagroup/email_lists"
-LOG_DIR="/home/hpcagroup/logs"
+SCRIPT_DIR=""
+OUTPUT_DIR=""
+LOG_DIR=""
 DATE=$(date +%Y%m%d)
 
 # Create necessary directories if they don't exist
@@ -33,42 +33,13 @@ chmod 755 "$OUTPUT_DIR"
 
 # Generate the all users list
 cat > "$OUTPUT_DIR/all_users.txt" << EOL
-aggie@hpcagroup.africa
-clary@hpcagroup.africa
-clem@hpcagroup.africa
-costa@hpcagroup.africa
-davie@hpcagroup.africa
-ezekiel@hpcagroup.africa
-guni@hpcagroup.africa
-business@hpcagroup.africa
-hpctzengineer@hpcagroup.africa
-kelvin@hpcagroup.africa
-jeffrey@hpcagroup.africa
-nancy@hpcagroup.africa
-natasha@hpcagroup.africa
-nomsa@hpcagroup.africa
-nyasha@hpcagroup.africa
-phumzile@hpcagroup.africa
-sefati@hpcagroup.africa
-server_admin@hpcagroup.africa
-sharon@hpcagroup.africa
-stan@hpcagroup.africa
-tafara@hpcagroup.africa
-tanluc@hpcagroup.africa
-thatcher@hpcagroup.africa
-hpcagroup@hpcagroup.africa
-no_reply@hpcagroup.africa
-alphaxad@hpcagroup.africa
-ethel@hpcagroup.africa
-adam@hpcagroup.africa
-kudzanai@hpcagroup.africa
 EOL
 
 # Set proper permissions
 chmod 644 "$OUTPUT_DIR/all_users.txt"
 
 # Generate admin list
-grep -E "server_admin|clem" "$OUTPUT_DIR/all_users.txt" > "$OUTPUT_DIR/admin_list.txt"
+grep -E "" "$OUTPUT_DIR/all_users.txt" > "$OUTPUT_DIR/admin_list.txt"
 chmod 644 "$OUTPUT_DIR/admin_list.txt"
 
 # Log completion
