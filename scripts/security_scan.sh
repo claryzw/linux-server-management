@@ -7,7 +7,7 @@
 # Set up logging
 LOG_DIR="/var/log/security_scans"
 LOG_FILE="$LOG_DIR/security_scan_$(date +%Y%m%d_%H%M%S).log"
-ALERT_EMAIL="server_admin@hpcagroup.africa"
+ALERT_EMAIL=""
 
 # Create log directory if it doesn't exist
 mkdir -p $LOG_DIR
