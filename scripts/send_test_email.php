@@ -11,8 +11,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Constants
-define('EMAIL_LIST_PATH', '/home/hpcagroup/email_lists/all_users.txt');
-define('LOG_FILE', '/home/hpcagroup/logs/email_test.log');
+define('EMAIL_LIST_PATH', '');
+define('LOG_FILE', '');
 
 // Ensure log directory exists
 if (!file_exists(dirname(LOG_FILE))) {
