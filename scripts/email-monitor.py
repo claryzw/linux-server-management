@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import imaplib
 import email
 import os
@@ -5,13 +6,13 @@ import logging
 from datetime import datetime
 
 # Configuration
-EMAIL = "suspicious@hpcagroup.africa"
+EMAIL = ""
 PASSWORD = os.environ.get("EMAIL_PASSWORD")  # Store in environment variable
-IMAP_SERVER = "mail.hpcagroup.africa"
+IMAP_SERVER = ""
 IMAP_PORT = 993  # SSL Port
 SAVE_DIR = "suspicious_emails"
 
-logging.basicConfig(filename='email_monitor.log', level=logging.INFO,
+logging.basicConfig(filename='email-monitor.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def check_mailbox():
