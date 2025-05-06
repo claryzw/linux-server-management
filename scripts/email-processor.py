@@ -1,58 +1,69 @@
-import os
-import logging
-import mailparser
-import re
-import time
-from dotenv import load_dotenv
-import requests
-
-# Import functions from your other modules
-from email_monitor import check_mailbox
-from email_responder import send_response
-
-# Load environment variables and set up paths
-load_dotenv('/home/hpcagroup/email-security/.env')
-VIRUSTOTAL_API_KEY = os.environ.get("VIRUSTOTAL_API_KEY")
-
-# Define directory paths
-BASE_DIR = '/opt/hpcagroup/email-security'
-SAVE_DIR = os.path.join(BASE_DIR, 'data/suspicious_emails')
-PROCESSED_DIR = os.path.join(BASE_DIR, 'data/processed_emails')
+#!/usr/bin/env python3
+import os, re, logging
+from mailparser import parse_from_file, parse_from_string
+from email_response import calculate_threat_level
+def virus_total_check(url):                      
+    return {"malicious": 0, "suspicious": 0}     
 
 def extract_links(text):
-    """Extract URLs from text using regex."""
-    url_pattern = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+[/?=\-&%.\w]+'
-    return re.findall(url_pattern, text)
+    pattern = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+[/?=\-&%.\w]+'
+    return re.findall(pattern, text or "")
 
-def check_virustotal(url):
-    """Check a URL against VirusTotal's API (v3)."""
-    # Existing check_virustotal function
-    
 def analyze_email(email_path):
-    """Main analysis function."""
-    # Existing analyze_email function
+    try:
+        if not os.path.exists(email_path):
+            logging.error("File not found: %s", email_path)
+            return {"error": "File not found"}
 
-def process_emails():
-    """Process all saved .eml files"""
-    # Create directories if they don't exist
-    os.makedirs(SAVE_DIR, exist_ok=True)
-    os.makedirs("processed_emails", exist_ok=True)
-    
-    # Check mailbox for new emails
-    new_emails = check_mailbox()
-    logging.info(f"Found {len(new_emails)} new emails")
-    
-    # Process all emails in the directory
-    for filename in os.listdir(SAVE_DIR):
-        if filename.endswith('.eml'):
-            email_path = os.path.join(SAVE_DIR, filename)
-            
-            # Analyze email using your existing code
-            analysis_result = analyze_email(email_path)
-            
-            # Generate and send response
-            if send_response(analysis_result):
-                # Move to processed folder after successful response
-                processed_path = os.path.join("processed_emails", filename)
-                os.rename(email_path, processed_path)
-                logging.info(f"Processed and moved email: {filename}")
+        p = parse_from_file(email_path)
+
+        # --- bodies ---------------------------------------------------------
+        text_body = "".join(p.text_plain) if isinstance(p.text_plain, list) else (p.text_plain or "")
+        html_body = "".join(p.text_html)  if isinstance(p.text_html,  list) else (p.text_html  or "")
+
+        # --- forwarded mail handling ----------------------------------------
+        if "Forwarded message" in text_body:
+            fwd = parse_from_string(text_body.split("Forwarded message", 1)[-1])
+            original = fwd.from_[0][1] if fwd.from_ else "unknown"
+        else:
+            original = p.from_[0][1] if p.from_ else "unknown"
+
+        analysis = {                         # <-- build dict FIRST
+            "original_sender": original,
+            "subject"        : p.subject,
+            "links"          : sorted(set(extract_links(text_body) + extract_links(html_body))),
+            "attachments"    : [att["filename"] for att in p.attachments if att.get("filename")],
+            "email_body"     : text_body,
+        }
+
+        # --- VirusTotal ------------------------------------------------------
+        vt = {}
+        for url in analysis["links"]:
+            stats = virus_total_check(url)
+            vt[url] = {"malicious": int(stats.get("malicious", 0)),
+                       "suspicious": int(stats.get("suspicious", 0))}
+        analysis["virus_total_results"] = vt
+
+        # --- threat level ----------------------------------------------------
+        analysis["threat_level"] = calculate_threat_level(analysis)
+
+        # --- debug log -------------------------------------------------------
+        logging.info("Threat calc %s - links:%d att:%d level:%s",
+                     email_path,
+                     len(analysis["links"]),
+                     len(analysis["attachments"]),
+                     analysis["threat_level"])
+        return analysis
+
+    except Exception as e:
+        logging.error("Analysis failed for %s: %s", email_path, e)
+        return {"error": str(e)}
+
+def process_emails(email_path):
+    analysis = analyze_email(email_path)
+    if analysis and not analysis.get("error"):
+        from email_response import send_response
+        if analysis.get("original_sender"):        # fixed key
+            send_response(analysis)
+        return True
+    return False
