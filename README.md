@@ -13,19 +13,15 @@ Documentation of server management practices and procedures for Linux-based infr
 ## Features
 - Daily server management procedures
 - Security implementation guides
-- Backup management strategies
 - Monitoring and alert systems
 - Performance optimization techniques
-- Disaster recovery procedures
 
 ## Documentation Structure
-- `docs/`: Detailed documentation for each component
 - `scripts/`: Automation scripts for routine tasks
 
 ## Getting Started
 1. Clone this repository
-2. Review the documentation in `docs/`
-3. Explore automation scripts in `scripts/`
+2. Explore automation scripts in `scripts/`
 
 ## Author
 Clarence Msindo - ICT Shared Services Lead at HA Group
