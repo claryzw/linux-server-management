@@ -1,17 +1,10 @@
 #!/bin/bash
-
 # Daily Health Check Script for WHM/cPanel Server
-# OS: CentOS v7.9.2009 STANDARD
-# Control Panel: cPanel Version 110.0.48
-# Hosting: Afrihost Dedicated Hosting (Self-managed)
-# Hardware: 8GB RAM, 2x 1TB Enterprise (RAID 1)
-# Author: Clarence Msindo
 
 # Log file location
 LOG_FILE="/var/log/daily_health_check.log"
-
 # Email address to send the report
-ADMIN_EMAIL="server_admin@hpcagroup.africa"
+ADMIN_EMAIL="admin@example.com" #-> You can put the admin or any email to notify here
 
 # Function to log messages
 log_message() {
@@ -38,9 +31,9 @@ log_message "Memory usage: $MEMORY_USAGE of $MEMORY_TOTAL"
 
 # Check CPU load
 log_message "Checking CPU load..."
-CPU_LOAD=$(uptime | awk -F 'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//g')
+CPU_LOAD=$(uptime | awk -F 'load average:' '{print $2}' | awk '{print $1}')
 CPU_CORES=$(nproc)
-if (( $(echo "$CPU_LOAD > $CPU_CORES" | bc -l 2>/dev/null) )); then
+if (( $(echo "$CPU_LOAD > $CPU_CORES" | bc -l) )); then
     log_message "WARNING: CPU load is high! Current load: $CPU_LOAD"
 else
     log_message "CPU load is normal. Current load: $CPU_LOAD"
@@ -48,7 +41,7 @@ fi
 
 # Check cPanel services
 log_message "Checking cPanel services..."
-if /usr/local/cpanel/bin/whmapi1 system_status | grep -q "stopped"; then
+if ! systemctl is-active --quiet cpanel; then
     log_message "WARNING: Some cPanel services are stopped!"
 else
     log_message "All cPanel services are running."
@@ -56,11 +49,24 @@ fi
 
 # Check RAID status
 log_message "Checking RAID status..."
-RAID_STATUS=$(cat /proc/mdstat | grep -o "\[U\]")
-if [ -z "$RAID_STATUS" ]; then
-    log_message "WARNING: RAID array is not healthy!"
+if [ -f /proc/mdstat ]; then
+    # Check for failed drives (look for underscores in status)
+    FAILED_DRIVES=$(grep -E "\[.*_.*\]" /proc/mdstat)
+
+    if [ -n "$FAILED_DRIVES" ]; then
+        log_message "WARNING: RAID array has failed drives!"
+        log_message "Failed array details: $FAILED_DRIVES"
+    else
+        # Count active arrays and get their status
+        MD126_STATUS=$(grep "md126" /proc/mdstat | awk '{print $4}')
+        MD127_STATUS=$(grep "md127" /proc/mdstat | awk '{print $4}')
+
+        log_message "RAID arrays healthy:"
+        log_message "  - md126 (Data): $MD126_STATUS"
+        log_message "  - md127 (Boot): $MD127_STATUS"
+    fi
 else
-    log_message "RAID array is healthy."
+    log_message "ERROR: Cannot access /proc/mdstat - RAID status unknown"
 fi
 
 # Check for updates
