@@ -10,7 +10,7 @@ from email_processor import process_emails
 from email_response import generate_response, send_response
 
 # Define paths
-BASE_DIR = '/home/hpcagroup/email-security'
+BASE_DIR = '' #-> Put the path that you will save the script
 SAVE_DIR = os.path.join(BASE_DIR, 'data/suspicious_emails')
 PROCESSED_DIR = os.path.join(BASE_DIR, 'data/processed_emails')
 LOG_FILE = os.path.join(BASE_DIR, 'logs/email-monitor.log')
