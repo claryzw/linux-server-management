@@ -2,8 +2,8 @@
 <?php
 /**
  * Weekly System Test Email Script
- * HA Group
- * Author: Clarence Msindo
+ * [Company Name]
+ * Author: [Company Name]
  */
 
 // Error reporting
@@ -30,14 +30,14 @@ writeLog("Starting weekly system test email distribution");
 
 // Email configuration
 $config = [
-    'from_email' => 'hpcagroup@hpcagroup.africa',
-    'from_name' => 'HA Group System User',
+    'from_email' => 'example@example.com',
+    'from_name' => '[Company Name] System User',
     'subject' => 'Weekly System Test Email',
     'headers' => [
         'MIME-Version: 1.0',
         'Content-type: text/html; charset=UTF-8',
-        'From: HA Group System User <hpcagroup@hpcagroup.africa>',
-        'Reply-To: hpcagroup@hpcagroup.africa',
+        'From: HA Group System User <example@example.com>',
+        'Reply-To: example@example.com',
         'X-Mailer: PHP/' . phpversion()
     ]
 ];
@@ -53,8 +53,8 @@ $message = "
     <p>Please do not respond to this message.</p>
     <br>
     <p><strong>System User</strong><br>
-    HA Group<br>
-    Email: hpcagroup@hpcagroup.africa</p>
+    [Company Name]<br>
+    Email: example@example.com</p>
     <hr>
     <p><small>Sent: " . date('Y-m-d H:i:s') . "<br>
     Server: " . php_uname('n') . "</small></p>
@@ -113,3 +113,4 @@ foreach ($users as $user_email) {
 $summary = "Email distribution completed. Successfully sent: $sent_count, Failed: $failed_count";
 writeLog($summary);
 echo $summary . "\n";
+
