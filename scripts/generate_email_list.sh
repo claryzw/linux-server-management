@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Script: generate_email_list.sh
-# Purpose: Generate and maintain email lists for HA Group
-# Author: Clarence Msindo
+# Purpose: Generate and maintain email lists for [Company Name]
+# Author: [Company Name]
 # Date: January 2025
 
 # Set script variables
