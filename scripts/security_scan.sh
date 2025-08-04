@@ -1,12 +1,12 @@
 #!/bin/bash
-# Security Scan Script for HA Group
-# Author: Clarence Msindo
-# Last Updated: July 2025
+# Security Scan Script for [Company Name]
+# Author: [Company Name]
+# Updated: July 2025
 
 # Set up logging
 LOG_DIR="/var/log/security_scans"
 LOG_FILE="$LOG_DIR/security_scan_$(date +%Y%m%d_%H%M%S).log"
-ALERT_EMAIL="server_admin@hpcagroup.africa"
+ALERT_EMAIL="admin@example.com"
 
 # Create log directory if it doesn't exist
 mkdir -p $LOG_DIR
@@ -29,7 +29,7 @@ send_alert() {
 check_updates() {
     log_message "Checking for system updates..."
 
-    # Use dnf for AlmaLinux
+    # Use dnf
     updates=$(dnf check-update --quiet 2>/dev/null | grep -v "^$" | wc -l)
     security_updates=$(dnf --security check-update --quiet 2>/dev/null | grep -v "^$" | wc -l)
 
