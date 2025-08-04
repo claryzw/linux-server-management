@@ -109,7 +109,7 @@ This document outlines the system administration automation scripts and tools de
 
 ## **Contact**  
 For any issues, verification, or system administration inquiries:  
-- **Email:** [Internal company email system]  
+- **Email:** server_admin@hpcagroup.africa 
 - **Role:** ICT Shared Services Lead  
 - **Repository:** Available for configuration and deployment guidance  
 
