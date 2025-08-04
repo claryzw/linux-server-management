@@ -1,103 +1,57 @@
 #!/bin/bash
+
 # Mailbox Capacity Warning Script for HA Group
-# Revised: 29 April 2025
+# Location: /usr/local/sbin/mailbox_warning.sh
 # Author: Clarence Msindo
+# Revised: August 2025
 
 # Configuration
 LOG_FILE="/var/log/mailbox_warnings.log"
-ADMIN_EMAIL="server_admin@hpcagroup.africa"
+ADMIN_EMAIL="admin@example.com" #-> Add your admin email here
+ALERT_THRESHOLD=90  # Alert when mailbox is 90% full
+TEMP_FILE="/tmp/mailbox_check_$$.tmp"
+
+# Colors for output
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Thresholds for different alert levels
 declare -A THRESHOLDS=([90]=WARNING [98]=CRITICAL)
 
-# Function to log messages with current timestamp
 log_message() {
-    local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-    echo "[$timestamp] $1" >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-# Check dependencies
-if ! command -v bc >/dev/null 2>&1; then
-    echo "ERROR: bc calculator is required but not installed" >&2
-    exit 1
-fi
+send_alert() {
+    local account="$1"
+    local usage="$2"
+    local quota="$3"
+    local percent="$4"
+    local severity="$5"
 
-# Initialize log file
-touch "$LOG_FILE" || { echo "Cannot write to log file: $LOG_FILE" >&2; exit 1; }
-
-log_message "Starting mailbox capacity check"
-
-# Get list of all email accounts
-EMAIL_ACCOUNTS=$(uapi --user=root Email list_pops | awk '/email:/ {print $2}')
-if [ -z "$EMAIL_ACCOUNTS" ]; then
-    log_message "ERROR: No email accounts found"
-    exit 1
-fi
-
-# Process each email account once
-for EMAIL in $EMAIL_ACCOUNTS; do
-    # Get mailbox usage information
-    USAGE_INFO=$(uapi --user=root Email get_disk_usage email="$EMAIL")
-    SIZE=$(echo "$USAGE_INFO" | awk '/diskused:/ {print $2}')
-    QUOTA=$(echo "$USAGE_INFO" | awk '/diskquota:/ {print $2}')
-
-    # Validate numeric values
-    if [[ ! "$SIZE" =~ ^[0-9]+$ ]] || [[ ! "$QUOTA" =~ ^[0-9]+$ ]]; then
-        log_message "ERROR: Invalid size/quota for $EMAIL (S: $SIZE, Q: $QUOTA)"
-        continue
-    fi
-
-    # Handle unlimited quota accounts
-    if [ "$QUOTA" -eq 0 ]; then
-        log_message "INFO: $EMAIL has unlimited quota"
-        continue
-    fi
-
-    # Calculate usage
-    PERCENT=$(echo "scale=2; ($SIZE/$QUOTA)*100" | bc)
-    PERCENT_INT=${PERCENT%.*}
-    SIZE_MB=$(echo "scale=2; $SIZE/1024/1024" | bc)
-    QUOTA_MB=$(echo "scale=2; $QUOTA/1024/1024" | bc)
-
-    log_message "Checking $EMAIL: $PERCENT_INT% used ($SIZE_MB MB of $QUOTA_MB MB)"
-
-    # Determine if any threshold is crossed
-    CURRENT_SEVERITY=""
-    for threshold in $(echo "${!THRESHOLDS[@]}" | tr ' ' '\n' | sort -nr); do
-        if [ "$PERCENT_INT" -ge "$threshold" ]; then
-            CURRENT_SEVERITY="${THRESHOLDS[$threshold]}"
-            break
-        fi
-    done
-
-    # Skip processing if no threshold crossed
-    [ -z "$CURRENT_SEVERITY" ] && continue
-
-    # Prepare email content based on severity
-    case $CURRENT_SEVERITY in
+    local subject=""
+    local priority=""
+    
+    case $severity in
         CRITICAL)
-            SUBJECT="URGENT: Your HA Group email mailbox is critically full"
-            PRIORITY="-a 'X-Priority: 1'"
-            ACTION_LINES=(
-                "URGENT NOTIFICATION: Your email mailbox ($EMAIL) has reached $PERCENT_INT% of its capacity."
-                "Your mailbox is CRITICALLY FULL and you will STOP RECEIVING EMAILS very soon unless immediate action is taken."
-                "Please take IMMEDIATE action:"
-            )
+            subject="URGENT: Your HA Group email mailbox is critically full"
+            priority="-a 'X-Priority: 1'"
             ;;
         WARNING)
-            SUBJECT="ACTION REQUIRED: Your HA Group email mailbox is nearly full"
-            PRIORITY=""
-            ACTION_LINES=(
-                "This is an automated notification to inform you that your email mailbox ($EMAIL) has reached $PERCENT_INT% of its capacity."
-                "To ensure you continue to receive emails without interruption, please take one of the following actions:"
-            )
+            subject="ACTION REQUIRED: Your HA Group email mailbox is nearly full"
+            priority=""
             ;;
     esac
 
-    # Common email body template
-    EMAIL_BODY="Dear HA Group Email User,
+    local message="Dear [Company Name] User,
 
-${ACTION_LINES[0]}
-${ACTION_LINES[1]}
-${ACTION_LINES[2]:-}
+Your email mailbox ($account) has reached $percent% of its capacity.
+
+Current Usage: ${usage}MB of ${quota}MB
+
+Please take immediate action:
 
 1. DELETE UNNECESSARY EMAILS:
    - Open your email client and sort emails by size (largest first)
@@ -119,16 +73,202 @@ Email: $ADMIN_EMAIL
 Thank you for your prompt attention to this matter.
 
 Best regards,
-ICT Shared Services Team
-HA Group"
+[Company Name Position]
+[Company Name]"
 
-    # Send email
-    if echo "$EMAIL_BODY" | mail -s "$SUBJECT" $PRIORITY "$EMAIL" -c "$ADMIN_EMAIL"; then
-        log_message "$CURRENT_SEVERITY: Warning email sent to $EMAIL"
+    if echo "$message" | mail -s "$subject" $priority "$account" -c "$ADMIN_EMAIL"; then
+        log_message "$severity: Warning email sent to $account"
+        return 0
     else
-        log_message "ERROR: Failed to send email to $EMAIL"
+        log_message "ERROR: Failed to send email to $account"
+        return 1
     fi
-done
+}
 
-log_message "Mailbox capacity check completed"
-exit 0
+check_dependencies() {
+    # Check if required tools are available
+    if ! command -v bc >/dev/null 2>&1; then
+        log_message "ERROR: bc calculator is required but not installed"
+        exit 1
+    fi
+    
+    if ! command -v mail >/dev/null 2>&1; then
+        log_message "WARNING: mail command not available - alerts will be logged only"
+    fi
+    
+    # Check if cPanel UAPI is available
+    if ! command -v uapi >/dev/null 2>&1; then
+        log_message "ERROR: cPanel UAPI not available"
+        exit 1
+    fi
+}
+
+get_email_accounts() {
+    local accounts_found=0
+    > "$TEMP_FILE"
+    
+    # Iterate through all cPanel users
+    for user_file in /var/cpanel/users/*; do
+        if [[ ! -f "$user_file" ]]; then
+            continue
+        fi
+        
+        local username=$(basename "$user_file")
+        log_message "Checking user: $username"
+        
+        # Get email accounts for this user
+        local email_list=$(uapi --user="$username" Email list_pops 2>/dev/null | grep -E "^\s*email:" | awk '{print $2}')
+        
+        if [[ -n "$email_list" ]]; then
+            echo "$email_list" | while read -r email; do
+                if [[ "$email" =~ @ ]]; then
+                    echo "$username:$email" >> "$TEMP_FILE"
+                    ((accounts_found++))
+                fi
+            done
+        fi
+    done
+    
+    local total_found=$(wc -l < "$TEMP_FILE" 2>/dev/null || echo "0")
+    log_message "Found $total_found email accounts total"
+}
+
+check_mailbox_usage() {
+    local cpanel_user="$1"
+    local email_account="$2"
+    
+    # Method 1: Use UAPI with correct user context
+    local result=$(uapi --user="$cpanel_user" Email get_disk_usage email="$email_account" 2>/dev/null)
+    
+    if [[ $? -eq 0 && -n "$result" ]]; then
+        local usage=$(echo "$result" | grep -E "^\s*diskused:" | awk '{print $2}')
+        local quota=$(echo "$result" | grep -E "^\s*diskquota:" | awk '{print $2}')
+        
+        # Validate numeric values
+        if [[ "$usage" =~ ^[0-9]+$ && "$quota" =~ ^[0-9]+$ ]]; then
+            # Handle unlimited quota (can be 0, -1, or very large numbers)
+            if [[ "$quota" -eq 0 || "$quota" -eq -1 || "$quota" -gt 99999999 ]]; then
+                log_message "INFO: $email_account has unlimited quota"
+                return 0
+            fi
+            
+            # Convert to MB and calculate percentage
+            local usage_mb=$((usage / 1024 / 1024))
+            local quota_mb=$((quota / 1024 / 1024))
+            
+            # Use bc for accurate percentage calculation
+            local percent=$(echo "scale=0; ($usage * 100) / $quota" | bc)
+            
+            log_message "SUCCESS: $email_account - ${usage_mb}MB/${quota_mb}MB (${percent}%)"
+            
+            # Check thresholds
+            local current_severity=""
+            for threshold in $(echo "${!THRESHOLDS[@]}" | tr ' ' '\n' | sort -nr); do
+                if [[ "$percent" -ge "$threshold" ]]; then
+                    current_severity="${THRESHOLDS[$threshold]}"
+                    break
+                fi
+            done
+            
+            if [[ -n "$current_severity" ]]; then
+                send_alert "$email_account" "$usage_mb" "$quota_mb" "$percent" "$current_severity"
+                return 1
+            fi
+            return 0
+        fi
+    fi
+    
+    # Method 2: Check filesystem directly
+    local domain="${email_account##*@}"
+    local user_part="${email_account%%@*}"
+    local maildir_path="/home/$cpanel_user/mail/$domain/$user_part"
+    
+    if [[ -d "$maildir_path" && -f "$maildir_path/maildirsize" ]]; then
+        local size_info=$(head -1 "$maildir_path/maildirsize" 2>/dev/null)
+        local quota_bytes=$(echo "$size_info" | cut -d'S' -f1)
+        
+        if [[ "$quota_bytes" =~ ^[0-9]+$ && "$quota_bytes" -gt 0 ]]; then
+            local usage_bytes=0
+            if [[ -f "$maildir_path/maildirsize" ]]; then
+                usage_bytes=$(tail -n +2 "$maildir_path/maildirsize" 2>/dev/null | awk '{sum+=$1} END {print sum+0}')
+            fi
+            
+            local quota_mb=$((quota_bytes / 1024 / 1024))
+            local usage_mb=$((usage_bytes / 1024 / 1024))
+            local percent=$(echo "scale=0; ($usage_bytes * 100) / $quota_bytes" | bc 2>/dev/null || echo "0")
+            
+            log_message "SUCCESS: $email_account - ${usage_mb}MB/${quota_mb}MB (${percent}%)"
+            
+            # Check thresholds
+            local current_severity=""
+            for threshold in $(echo "${!THRESHOLDS[@]}" | tr ' ' '\n' | sort -nr); do
+                if [[ "$percent" -ge "$threshold" ]]; then
+                    current_severity="${THRESHOLDS[$threshold]}"
+                    break
+                fi
+            done
+            
+            if [[ -n "$current_severity" ]]; then
+                send_alert "$email_account" "$usage_mb" "$quota_mb" "$percent" "$current_severity"
+                return 1
+            fi
+            return 0
+        fi
+    fi
+    
+    log_message "WARNING: Could not retrieve usage info for $email_account"
+    return 2
+}
+
+# Main execution
+main() {
+    log_message "Starting mailbox capacity check"
+    
+    # Check dependencies
+    check_dependencies
+    
+    # Get all email accounts
+    get_email_accounts
+    
+    if [[ ! -f "$TEMP_FILE" || ! -s "$TEMP_FILE" ]]; then
+        log_message "ERROR: No email accounts found"
+        exit 1
+    fi
+    
+    local total_accounts=0
+    local warnings_sent=0
+    local errors_count=0
+    
+    # Process each account
+    while IFS=':' read -r cpanel_user email_account; do
+        if [[ -n "$cpanel_user" && -n "$email_account" ]]; then
+            ((total_accounts++))
+            log_message "Checking: $email_account (user: $cpanel_user)"
+            
+            check_mailbox_usage "$cpanel_user" "$email_account"
+            local result_code=$?
+            
+            case $result_code in
+                1) ((warnings_sent++)) ;;
+                2) ((errors_count++)) ;;
+            esac
+        fi
+    done < "$TEMP_FILE"
+    
+    # Cleanup
+    rm -f "$TEMP_FILE"
+    
+    # Generate summary
+    log_message "Check completed. Processed: $total_accounts accounts, Warnings sent: $warnings_sent, Errors: $errors_count"
+    
+    echo -e "\n${GREEN}=== MAILBOX CAPACITY CHECK SUMMARY ===${NC}"
+    echo -e "Total accounts checked: $total_accounts"
+    echo -e "Warnings sent: ${YELLOW}$warnings_sent${NC}"
+    echo -e "Errors encountered: ${RED}$errors_count${NC}"
+    echo -e "Log file: $LOG_FILE"
+    
+    exit $errors_count
+}
+
+# Run main function
+main "$@"
