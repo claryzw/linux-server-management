@@ -6,8 +6,8 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/home/hpcagroup/email-security/.env')
-EMAIL = "suspicious@hpcagroup.africa"
+load_dotenv('/home/[Company Name]/email-security/.env')
+EMAIL = "bad_emails@example.com"
 PASSWORD = os.environ.get("EMAIL_PASSWORD")
 
 # ---------------------------------------------------------------------------
@@ -74,17 +74,17 @@ Hello,
 
 We've analyzed the email you forwarded and identified it as HIGH RISK.
 
-ЁЯЪи THREAT ANALYSIS:
+THREAT ANALYSIS:
 - Multiple security concerns detected
 - {len(analysis.get('virus_total_results', {}))} potentially malicious links
 - {len(analysis.get('attachments', []))} suspicious attachments
 
-тЪая╕П RECOMMENDED ACTIONS:
+RECOMMENDED ACTIONS:
 1. DO NOT respond to the sender
 2. DO NOT click any links
 3. DELETE the email immediately
 
-HA Group
+[Company Name]
 """
     elif threat_level == "Medium":
         return """Subject: [CAUTION] Analysis of Forwarded Email
@@ -93,15 +93,15 @@ Hello,
 
 We've analyzed the email you forwarded and identified it as POTENTIALLY RISKY.
 
-тЪая╕П CAUTION:
+CAUTION:
 - Some suspicious elements detected
 - Exercise caution with any links or attachments
 
-ЁЯЫбя╕П RECOMMENDED ACTIONS:
+RECOMMENDED ACTIONS:
 1. Verify the sender through another channel
 2. Avoid clicking links or downloading attachments
 
-HA Group
+[Company Name]
 """
     else:
         return """Subject: Analysis of Forwarded Email
@@ -110,11 +110,11 @@ Hello,
 
 We've analyzed the email you forwarded. It appears to be LOW RISK.
 
-ЁЯУК ANALYSIS:
+ANALYSIS:
 - No major security threats detected
 - Remain vigilant with unexpected emails
 
-HA Group
+[Company Name]
 """
 
 def send_response(analysis):
@@ -145,3 +145,4 @@ def send_response(analysis):
     except Exception as e:
         logging.error(f"Generic error: {str(e)}")
         return False
+
