@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Mailbox Capacity Warning Script for HA Group
-# Location: /usr/local/sbin/mailbox_warning.sh
-# Author: Clarence Msindo
-# Revised: August 2025
+# Mailbox Capacity Warning Script for [Company Name]
+# Author: [Company Name]
+# Revised: [Date]
 
 # Configuration
 LOG_FILE="/var/log/mailbox_warnings.log"
@@ -36,11 +35,11 @@ send_alert() {
     
     case $severity in
         CRITICAL)
-            subject="URGENT: Your HA Group email mailbox is critically full"
+            subject="URGENT: Your [Company Name] email mailbox is critically full"
             priority="-a 'X-Priority: 1'"
             ;;
         WARNING)
-            subject="ACTION REQUIRED: Your HA Group email mailbox is nearly full"
+            subject="ACTION REQUIRED: Your [Company Name] email mailbox is nearly full"
             priority=""
             ;;
     esac
@@ -272,3 +271,4 @@ main() {
 
 # Run main function
 main "$@"
+
