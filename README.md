@@ -107,13 +107,5 @@ This document outlines the system administration automation scripts and tools de
 
 ---
 
-## **Contact**  
-For any issues, verification, or system administration inquiries:  
-- **Email:** server_admin@hpcagroup.africa 
-- **Role:** ICT Shared Services Lead  
-- **Repository:** Available for configuration and deployment guidance  
-
----
-
 This **README.md** provides transparency and accountability for enterprise system administration automation development. Scripts are designed as production-ready templates requiring environment-specific configuration before deployment.
 
