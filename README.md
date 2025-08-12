@@ -1,11 +1,10 @@
-# **HA Group Linux Server Management**  
-### **Administrator:** Clarence Msindo  
-### **Role:** ICT Shared Services Lead  
-### **Date:** Last Updated: 2025-08-04  
+# **Linux Server Management**   
+### **Date:** Last Updated: 12/08/2025  
+
 ---
 
 ## **Overview**  
-This document outlines the system administration automation scripts and tools developed for **HA Group** enterprise infrastructure. These scripts provide comprehensive server management, security monitoring, and email administration capabilities for AlmaLinux/CentOS environments with cPanel/WHM hosting platforms.
+This document outlines the system administration automation scripts and tools developed for enterprise infrastructure. These scripts provide comprehensive server management, security monitoring, and email administration capabilities for AlmaLinux/CentOS environments with cPanel/WHM hosting platforms.
 
 ---
 
@@ -108,4 +107,9 @@ This document outlines the system administration automation scripts and tools de
 ---
 
 This **README.md** provides transparency and accountability for enterprise system administration automation development. Scripts are designed as production-ready templates requiring environment-specific configuration before deployment.
+
+---
+
+**Administrator:** Clarence Msindo  
+
 
