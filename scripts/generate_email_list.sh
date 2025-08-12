@@ -1,14 +1,11 @@
 #!/bin/bash
-
-# Script: generate_email_list.sh
 # Purpose: Generate and maintain email lists for [Company Name]
-# Author: [Company Name]
-# Date: January 2025
+# Author: Clarence Msindo
 
 # Set script variables
-SCRIPT_DIR=""
-OUTPUT_DIR=""
-LOG_DIR=""
+SCRIPT_DIR="/opt/scripts" #-> Configure script directory
+OUTPUT_DIR="/var/lib/email-lists" #-> Configure output directory
+LOG_DIR="/var/log/email-lists"  #-> Configure log directory
 DATE=$(date +%Y%m%d)
 
 # Create necessary directories if they don't exist
