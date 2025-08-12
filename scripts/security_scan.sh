@@ -1,7 +1,6 @@
 #!/bin/bash
 # Security Scan Script for [Company Name]
-# Author: [Company Name]
-# Updated: July 2025
+# Author: Clarence Msindo
 
 # Set up logging
 LOG_DIR="/var/log/security_scans"
