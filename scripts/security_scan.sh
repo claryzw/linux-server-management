@@ -6,7 +6,7 @@
 # Set up logging
 LOG_DIR="/var/log/security_scans"
 LOG_FILE="$LOG_DIR/security_scan_$(date +%Y%m%d_%H%M%S).log"
-ALERT_EMAIL="admin@example.com"
+ALERT_EMAIL="admin@example.com" #-> You can put the admin or any email to notify here
 
 # Create log directory if it doesn't exist
 mkdir -p $LOG_DIR
