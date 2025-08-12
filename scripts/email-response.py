@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv('/home/[Company Name]/email-security/.env')
-EMAIL = "bad_emails@example.com"
+EMAIL = "security@example.com" #-> Configure with an mail that will monitor suspect emails
 PASSWORD = os.environ.get("EMAIL_PASSWORD")
 
 # ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ ANALYSIS:
 
 def send_response(analysis):
     """Send email response based on analysis"""
-    smtp_server = "mail.hpcagroup.africa"
+    smtp_server = "mail.example.com" #-> Configure your SMTP server
     smtp_port = 465  # SSL Port
     
     msg = MIMEMultipart()
@@ -145,4 +145,5 @@ def send_response(analysis):
     except Exception as e:
         logging.error(f"Generic error: {str(e)}")
         return False
+
 
