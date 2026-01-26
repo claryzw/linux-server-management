@@ -60,7 +60,17 @@ This document outlines the system administration automation scripts and tools de
 
 ### **System Administration Scripts**
 - **`daily_health_check.sh`** - Comprehensive daily system monitoring (disk, memory, CPU, RAID, cPanel services)
+
+<p align="center">
+ <img src="https://github.com/claryzw/linux-server-management/blob/main/screenshots/Screenshot%202026-01-26%20Daily%20Health%20Check.png" alt="Daily Health")
+</p>
+  
 - **`security_scan.sh`** - Security vulnerability scanning with DNF updates, firewall checks, and file integrity verification  
+
+<p align="center">
+ <img src="https://github.com/claryzw/linux-server-management/blob/main/screenshots/Screenshot%202026-01-26%20security_scan.png" alt="Daily Health")
+</p>
+
 - **`mailbox_warning.sh`** - Advanced mailbox quota monitoring with cPanel UAPI integration and automated user notifications
 
 ### **Email Security & Management Suite**  
