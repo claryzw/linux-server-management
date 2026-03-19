@@ -71,7 +71,7 @@ fi
 
 # Check for updates
 log_message "Checking for system updates..."
-yum check-update &>> $LOG_FILE
+dnf check-update &>> $LOG_FILE
 if [ $? -eq 100 ]; then
     log_message "System updates are available."
 else
