@@ -1,0 +1,34 @@
+# Secrets — NEVER commit these
+.env
+*.pem
+*.key
+*.crt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+data/
+suspicious_emails/
+processed_emails/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS temp files
+*.bak
+*.tmp
