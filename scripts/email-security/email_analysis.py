@@ -14,8 +14,7 @@ BASE_DIR = '' #-> Put the path that you will save the script
 SAVE_DIR = os.path.join(BASE_DIR, 'data/suspicious_emails')
 PROCESSED_DIR = os.path.join(BASE_DIR, 'data/processed_emails')
 LOG_FILE = os.path.join(BASE_DIR, 'logs/email-monitor.log')
-SCRIPT_DIR = sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(SCRIPT_DIR)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) sys.path.insert(0, SCRIPT_DIR)
 
 # Configure logging
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO,
